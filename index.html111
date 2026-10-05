@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CYBER_PORTFOLIO // Y2K GAME UI</title>
+  <!-- Google Fonts: Share Tech Mono & Press Start 2P for Retro Y2K aesthetic -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-color: #0b0c10;
+      --card-bg: #1f2833;
+      --accent-cyan: #66fcf1;
+      --accent-green: #45a29e;
+      --accent-pink: #ff007f;
+      --text-main: #c5c6c7;
+      --text-bright: #ffffff;
+      --locked-bg: #121418;
+      --locked-border: #2c3540;
+      --locked-text: #505c6e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: 'Share Tech Mono', 'Noto Sans TC', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* 復古 CRT 電視掃描線效果 */
+    body::before {
+      content: " ";
+      display: block;
+      position: fixed;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      z-index: 10;
+      background-size: 100% 4px, 6px 100%;
+      pointer-events: none;
+    }
+
+    /* 背景 Y2K 網格底紋 */
+    .grid-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-image: 
+        linear-gradient(to right, rgba(102, 252, 241, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(102, 252, 241, 0.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: -1;
+    }
+
+    .container {
+      max-width: 1000px;
+      width: 100%;
+      margin: 0 auto;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* 個人資料頭像區域 */
+    .profile-section {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      position: relative;
+    }
+
+    .avatar-wrapper {
+      position: relative;
+      width: 130px;
+      height: 130px;
+      margin: 0 auto 1.2rem auto;
+      border-radius: 50%;
+      padding: 5px;
+      background: linear-gradient(45deg, var(--accent-cyan), var(--accent-pink));
+      box-shadow: 0 0 20px rgba(102, 252, 241, 0.4), 0 0 40px rgba(255, 0, 127, 0.2);
+      animation: pulseGlow 3s infinite alternate;
+    }
+
+    .avatar-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 3px solid var(--bg-color);
+      background-color: #1a1a24;
+    }
+
+    .status-badge {
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      background: #00ff66;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 3px solid var(--bg-color);
+      box-shadow: 0 0 10px #00ff66;
+    }
+
+    .user-name {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 2.2rem;
+      font-weight: bold;
+      color: var(--text-bright);
+      text-shadow: 0 0 10px var(--accent-cyan), 0 0 20px var(--accent-cyan);
+      letter-spacing: 2px;
+      margin-bottom: 0.3rem;
+    }
+
+    .sub-title {
+      font-size: 0.95rem;
+      color: var(--accent-green);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      background: rgba(69, 162, 158, 0.1);
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid rgba(69, 162, 158, 0.3);
+      display: inline-block;
+    }
+
+    /* 16宮格按鈕排版 (4x4 Grid) */
+    .quest-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      width: 100%;
+    }
+
+    /* 按鈕基礎樣式 */
+    .quest-btn {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 110px;
+      padding: 1rem;
+      background: rgba(31, 40, 51, 0.7);
+      border: 1.5px solid rgba(102, 252, 241, 0.3);
+      border-radius: 12px;
+      color: var(--text-bright);
+      text-decoration: none;
+      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      backdrop-filter: blur(5px);
+      overflow: hidden;
+    }
+
+    /* 關卡號碼標籤 */
+    .quest-num {
+      font-size: 0.75rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      color: var(--accent-cyan);
+      opacity: 0.8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* 關卡標題內容 */
+    .quest-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-top: auto;
+      word-break: break-word;
+    }
+
+    /* --- 已解鎖狀態 (Unlocked) --- */
+    .quest-btn.unlocked {
+      border-color: var(--accent-cyan);
+      background: linear-gradient(135deg, rgba(31, 40, 51, 0.9) 0%, rgba(102, 252, 241, 0.1) 100%);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(102, 252, 241, 0.1);
+      cursor: pointer;
+    }
+
+    /* 解鎖 Hover 動畫效果 */
+    .quest-btn.unlocked:hover {
+      transform: translateY(-5px) scale(1.02);
+      border-color: #ffffff;
+      box-shadow: 0 0 20px var(--accent-cyan), 0 0 35px rgba(102, 252, 241, 0.5), inset 0 0 15px var(--accent-cyan);
+      background: linear-gradient(135deg, rgba(31, 40, 51, 0.95) 0%, rgba(102, 252, 241, 0.25) 100%);
+    }
+
+    .quest-btn.unlocked:hover .quest-title {
+      color: #ffffff;
+      text-shadow: 0 0 8px var(--accent-cyan);
+    }
+
+    /* Y2K 掃光效果裝飾 */
+    .quest-btn.unlocked::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(60deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+      transform: rotate(30deg);
+      transition: all 0.5s ease;
+      opacity: 0;
+    }
+
+    .quest-btn.unlocked:hover::after {
+      opacity: 1;
+      left: 100%;
+    }
+
+    /* --- 未解鎖狀態 (Locked) --- */
+    .quest-btn.locked {
+      background: var(--locked-bg);
+      border: 1px dashed var(--locked-border);
+      color: var(--locked-text);
+      cursor: not-allowed;
+      opacity: 0.65;
+    }
+
+    .quest-btn.locked .quest-num {
+      color: var(--locked-text);
+    }
+
+    .quest-btn.locked .quest-title {
+      color: var(--locked-text);
+      font-weight: normal;
+    }
+
+    /* 未解鎖 Hover 效果（抖動警告與紅光） */
+    .quest-btn.locked:hover {
+      border-color: var(--accent-pink);
+      box-shadow: 0 0 12px rgba(255, 0, 127, 0.4);
+      background: rgba(255, 0, 127, 0.05);
+      animation: shake 0.3s ease-in-out;
+    }
+
+    .quest-btn.locked:hover .lock-icon {
+      display: inline-block;
+      animation: lockBounce 0.4s ease infinite alternate;
+    }
+
+    /* 動畫定義 Keyframes */
+    @keyframes pulseGlow {
+      0% {
+        box-shadow: 0 0 15px rgba(102, 252, 241, 0.4), 0 0 30px rgba(255, 0, 127, 0.2);
+      }
+      100% {
+        box-shadow: 0 0 25px rgba(102, 252, 241, 0.8), 0 0 50px rgba(255, 0, 127, 0.6);
+      }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-4px); }
+      40% { transform: translateX(4px); }
+      60% { transform: translateX(-3px); }
+      80% { transform: translateX(3px); }
+    }
+
+    @keyframes lockBounce {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.25) rotate(-10deg); }
+    }
+
+    /* 頁尾資訊 */
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--locked-text);
+      letter-spacing: 1px;
+    }
+
+    /* 響應式佈局 (RWD) */
+    @media (max-width: 900px) {
+      .quest-grid {
+        grid-template-columns: repeat(2, 1fr); /* 平板：2列 */
+      }
+    }
+
+    @media (max-width: 500px) {
+      .quest-grid {
+        grid-template-columns: 1fr; /* 手機：1列 */
+      }
+      .user-name {
+        font-size: 1.75rem;
+      }
+      .quest-btn {
+        height: 95px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 背景科技網格 -->
+  <div class="grid-bg"></div>
+
+  <div class="container">
+    
+    <!-- 1. 個人大頭貼與個人資訊區塊 -->
+    <header class="profile-section">
+      <div class="avatar-wrapper">
+        <!-- Placeholder 圖片，可自由更換為實際照片 URL -->
+        <img class="avatar-img" src="https://placehold.co/200x200/1f2833/66fcf1?text=AVATAR" alt="Personal Avatar" onerror="this.src='https://placehold.co/200x200/222/888?text=USER'">
+        <div class="status-badge" title="PLAYER ONLINE"></div>
+      </div>
+      <h1 class="user-name">STUDENT_NAME</h1>
+      <div class="sub-title">Web Dev Missions // Portfolio 2026</div>
+    </header>
+
+    <!-- 2. 任務按鈕選單 (16宮格) -->
+    <main class="quest-grid">
+      
+      <!-- Week 1: 已解鎖 -->
+      <a href="w1/index.html" class="quest-btn unlocked">
+        <div class="quest-num">STAGE 01 <span style="color:#00ff66;">[CLEAR]</span></div>
+        <div class="quest-title">Week 1 - 數位名片</div>
+      </a>
+
+      <!-- Week 2: 已解鎖 -->
+      <a href="w2/index.html" class="quest-btn unlocked">
+        <div class="quest-num">STAGE 02 <span style="color:#00ff66;">[CLEAR]</span></div>
+        <div class="quest-title">Week 2 - 今天吃甚麼?</div>
+      </a>
+
+      <!-- Week 3 ~ 16: 未解鎖狀態 (Locked) -->
+      <a href="#" class="quest-btn locked" onclick="event.preventDefault();">
+        <div class="quest-num">STAGE 03 <span>LOCKED</span></div>
+        <div class="quest-title">Week 3 - <span class="lock-icon">🔒</span> 尚未解鎖</div>
+      </a>
+
+      <a href="#" class="quest-btn locked" onclick="event.preventDefault();">
+        <div class="quest-num">STAGE 04 <span>LOCKED</span></div>
+        <div class="quest-title">Week 4 - <span class="lock-icon">🔒</span> 尚未解鎖</div>
+      </a>
+
+      <a href="#" class="quest-btn locked" onclick="event.preventDefault();">
+        <div class="quest-num">STAGE 05 <span>LOCKED</span></div>
+        <div class="quest-title">Week 5 - <span class="lock-icon">🔒</span> 尚未解鎖</div>
+      </a>
+
+      <a href="#" class="quest-btn locked" onclick="event.preventDefault();">
+        <div class="quest-num">STAGE 06 <span>LOCKED</span></div>
+        <div class="quest-title">Week 6 - <span class="lock-icon">🔒</span> 尚未解鎖</div>
+      </a>
+
+      <a href="#" class="quest-btn locked" onclick="event.preventDefault();">
+        <div class="quest-num">STAGE 07 <span>LOCKED</span></div>
+        <div class="quest-title">Week 7 - <span class="lock-icon">🔒</span> 尚未解鎖</div>
+      </a>
+
+      <a href="#" class="quest-btn locked" onclick="event.preventDefault();">
+        <div class="quest-num">STAGE 08 <span>LOCKED</span></div>
+        <div class="quest-title">Week 8 - <span class="lock-icon">🔒</span> 尚未解鎖</div>
+      </a>
+
+      <a href="#" class="quest-btn locked" onclick="event.preventDefault();">
+        <div class="quest-num">STAGE 09 <span>LOCKED</span></div>
+        <div class="quest-title">Week 9 - <span class="lock-icon">🔒</span> 尚未解鎖</div>
+      </a>
+
+      <a href="#" class="quest-btn locked" onclick="event.preventDefault();">
+        <div class="quest-num">STAGE 10 <span>LOCKED</span></div>
+        <div class="quest-title">Week 10 - <span class="lock-icon">🔒</span> 尚未解鎖</div>
+      </a>
+
+      <a href="#" class="quest-btn locked" onclick="event.preventDefault();">
+        <div class="quest-num">STAGE 11 <span>LOCKED</span></div>
+        <div class="quest-title">Week 11 - <span class="lock-icon">🔒</span> 尚未解鎖</div>
+      </a>
+
+      <a href="#" class="quest-btn locked" onclick="event.preventDefault();">
+        <div class="quest-num">STAGE 12 <span>LOCKED</span></div>
+        <div class="quest-title">Week 12 - <span class="lock-icon">🔒</span> 尚未解鎖</div>
+      </a>
+
+      <a href="#" class="quest-btn locked" onclick="event.preventDefault();">
+        <div class="quest-num">STAGE 13 <span>LOCKED</span></div>
+        <div class="quest-title">Week 13 - <span class="lock-icon">🔒</span> 尚未解鎖</div>
+      </a>
+
+      <a href="#" class="quest-btn locked" onclick="event.preventDefault();">
+        <div class="quest-num">STAGE 14 <span>LOCKED</span></div>
+        <div class="quest-title">Week 14 - <span class="lock-icon">🔒</span> 尚未解鎖</div>
+      </a>
+
+      <a href="#" class="quest-btn locked" onclick="event.preventDefault();">
+        <div class="quest-num">STAGE 15 <span>LOCKED</span></div>
+        <div class="quest-title">Week 15 - <span class="lock-icon">🔒</span> 尚未解鎖</div>
+      </a>
+
+      <a href="#" class="quest-btn locked" onclick="event.preventDefault();">
+        <div class="quest-num">STAGE 16 <span>LOCKED</span></div>
+        <div class="quest-title">Week 16 - <span class="lock-icon">🔒</span> 尚未解鎖</div>
+      </a>
+
+</main>
+
+    <footer>
+      <p>© 2026 WEB PROGRAMMING COURSE // ALL RIGHTS RESERVED</p>
+    </footer>
+
+  </div>
+
+</body>
+</html>
