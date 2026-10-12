@@ -344,6 +344,11 @@
         <div class="quest-title">Week 2 - 今天吃甚麼?</div>
       </a>
 
+ <!-- Week 3: 已解鎖 -->
+      <a href="w3/index.html" class="quest-btn unlocked">
+        <div class="quest-num">STAGE 03 <span style="color:#00ff66;">[CLEAR]</span></div>
+        <div class="quest-title">Week 3 - 迷因圖產生器</div>
+      </a>
       <!-- Week 3 ~ 16: 未解鎖狀態 (Locked) -->
       <a href="#" class="quest-btn locked" onclick="event.preventDefault();">
         <div class="quest-num">STAGE 03 <span>LOCKED</span></div>
