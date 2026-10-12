@@ -349,11 +349,7 @@
         <div class="quest-num">STAGE 03 <span style="color:#00ff66;">[CLEAR]</span></div>
         <div class="quest-title">Week 3 - 迷因圖產生器</div>
       </a>
-      <!-- Week 3 ~ 16: 未解鎖狀態 (Locked) -->
-      <a href="#" class="quest-btn locked" onclick="event.preventDefault();">
-        <div class="quest-num">STAGE 03 <span>LOCKED</span></div>
-        <div class="quest-title">Week 3 - <span class="lock-icon">🔒</span> 尚未解鎖</div>
-      </a>
+      <!-- Week 4~ 16: 未解鎖狀態 (Locked) -->
 
       <a href="#" class="quest-btn locked" onclick="event.preventDefault();">
         <div class="quest-num">STAGE 04 <span>LOCKED</span></div>
