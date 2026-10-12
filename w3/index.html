@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>養樂多粉膚色小狗 - 自定義迷因產生器</title>
+
+    <!-- 引入 Google 字型：Zen Maru Gothic (圓體) 與 Fredoka / Impact 風格字型 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+
+    <!-- 引入 Tailwind CSS 進行快速 UI 排版 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- 引入 html2canvas 用於匯出迷因圖片 (避開 CORS 與繪製問題) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        /* 養樂多粉膚色小狗 主題配色與自訂 CSS */
+        :root {
+            --bg-yakult-cream: #FDF7F2;      /* 養樂多牛奶底色 */
+            --bg-card: #FFFBF7;              /* 卡片柔白底色 */
+            --pink-peach: #F7C5CC;           /* 粉桃粉紅 */
+            --pink-peach-hover: #F4A6B0;     /* 懸停深粉紅 */
+            --yakult-orange: #F5B08A;        /* 養樂多微橘亮點 */
+            --puppy-dark: #4A3B32;           /* 小狗鼻子深咖啡色 (替代純黑) */
+            --puppy-border: #E8D3C3;         /* 柔和邊框色 */
+        }
+
+        body {
+            background-color: var(--bg-yakult-cream);
+            color: var(--puppy-dark);
+            font-family: 'Zen Maru Gothic', 'Fredoka', sans-serif;
+            background-image: radial-gradient(#F7C5CC 1.2px, transparent 1.2px), radial-gradient(#F5B08A 1.2px, #FDF7F2 1.2px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+        }
+
+        /* 可愛圓潤卡片與陰影 */
+        .yakult-card {
+            background-color: var(--bg-card);
+            border: 3px solid var(--puppy-border);
+            box-shadow: 0 8px 24px rgba(232, 211, 195, 0.4), 0 4px 0px #E8D3C3;
+            border-radius: 24px;
+        }
+
+        .yakult-btn {
+            background-color: var(--pink-peach);
+            color: var(--puppy-dark);
+            border: 2px solid #E8A8B2;
+            box-shadow: 0 4px 0 #E8A8B2;
+            transition: all 0.15s ease;
+        }
+
+        .yakult-btn:hover {
+            background-color: var(--pink-peach-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #E8A8B2;
+        }
+
+        .yakult-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #E8A8B2;
+        }
+
+        /* 迷因圖片上的經典文字陰影描邊效果 (高辨識度) */
+        .meme-text-styled {
+            font-family: 'Fredoka', 'Zen Maru Gothic', sans-serif;
+            font-weight: 900;
+            line-height: 1.2;
+            text-transform: uppercase;
+            text-align: center;
+            word-break: break-word;
+            pointer-events: none;
+            user-select: none;
+            /* 強效多重黑描邊與微陰影，確保在任何底圖上都清晰 */
+            text-shadow: 
+                -2.5px -2.5px 0 #000,  
+                 2.5px -2.5px 0 #000,
+                -2.5px  2.5px 0 #000,
+                 2.5px  2.5px 0 #000,
+                 0px    3px 0 #000,
+                 3px    0px 0 #000,
+                -3px    0px 0 #000,
+                 0px   -3px 0 #000,
+                 0px    5px 12px rgba(0, 0, 0, 0.7);
+        }
+
+        /* 滑桿可愛樣式 */
+        input[type=range] {
+            accent-color: #F4A6B0;
+        }
+
+        /* 隱藏原生檔案上傳按鈕 */
+        .file-input-hidden {
+            width: 0.1px;
+            height: 0.1px;
+            opacity: 0;
+            overflow: hidden;
+            position: absolute;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body class="min-h-screen py-6 px-4 md:px-8">
+
+    <!-- 頂部標題區塊 -->
+    <header class="max-w-6xl mx-auto text-center mb-8">
+        <div class="inline-flex items-center justify-center space-x-3 bg-white px-6 py-2 rounded-full border-2 border-[#E8D3C3] shadow-sm mb-3">
+            <span class="text-2xl">🐶</span>
+            <span class="text-sm md:text-base font-bold text-[#F4A6B0] tracking-wider">YAKULT PUPPY MEME MAKER</span>
+            <span class="text-2xl">🍼</span>
+        </div>
+        <h1 class="text-3xl md:text-5xl font-black tracking-tight text-[#4A3B32] drop-shadow-sm flex items-center justify-center gap-2">
+            養樂多粉膚小狗 ‧ 迷因產生器
+        </h1>
+        <p class="text-sm md:text-base text-[#8C7A6B] mt-2 font-medium">
+            簡單上傳圖片，即時加上搞笑標題，打造屬於你的專屬迷因！✨
+        </p>
+    </header>
+
+    <!-- 主要內容區 (桌面端左右分欄，手機端上下排列) -->
+    <main class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- 左側：控制面板區塊 (5 欄) -->
+        <section class="lg:col-span-5 yakult-card p-6 md:p-8 space-y-6">
+            
+            <div class="flex items-center border-b-2 border-dashed border-[#E8D3C3] pb-3">
+                <span class="text-xl mr-2">🎨</span>
+                <h2 class="text-xl font-bold text-[#4A3B32]">編輯控制台</h2>
+            </div>
+
+            <!-- 1. 本機圖片上傳 (FileReader API 避免 CORS 錯誤) -->
+            <div>
+                <label class="block text-sm font-bold text-[#4A3B32] mb-2">
+                    📷 1. 選擇背景圖片
+                </label>
+                <div class="flex items-center gap-3">
+                    <input type="file" id="imageUploader" accept="image/*" class="file-input-hidden" onchange="handleImageUpload(event)">
+                    <label for="imageUploader" class="yakult-btn cursor-pointer px-5 py-2.5 rounded-2xl font-bold text-sm inline-flex items-center gap-2 w-full justify-center">
+                        <span>📁 從電腦上傳圖片</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 預設範本快速選擇 (極致貼心功能) -->
+            <div>
+                <label class="block text-xs font-bold text-[#8C7A6B] mb-2">
+                    或選擇內建可愛範本：
+                </label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="loadTemplate('puppy')" class="bg-white border-2 border-[#E8D3C3] hover:border-[#F7C5CC] p-2 rounded-xl text-xs font-bold transition flex flex-col items-center">
+                        <span class="text-xl">🐶</span>
+                        <span>養樂多狗</span>
+                    </button>
+                    <button onclick="loadTemplate('cat')" class="bg-white border-2 border-[#E8D3C3] hover:border-[#F7C5CC] p-2 rounded-xl text-xs font-bold transition flex flex-col items-center">
+                        <span class="text-xl">🐱</span>
+                        <span>驚嚇小貓</span>
+                    </button>
+                    <button onclick="loadTemplate('coffee')" class="bg-white border-2 border-[#E8D3C3] hover:border-[#F7C5CC] p-2 rounded-xl text-xs font-bold transition flex flex-col items-center">
+                        <span class="text-xl">☕</span>
+                        <span>沒睡醒咖啡</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2. 雙層文字輸入欄位 -->
+            <div class="space-y-4">
+                <div>
+                    <label for="topTextInput" class="block text-sm font-bold text-[#4A3B32] mb-1">
+                        ✏️ 2. 上方文字 (Top Text)
+                    </label>
+                    <input type="text" id="topTextInput" value="當你寫 Code" placeholder="輸入上方文字..." 
+                           class="w-full px-4 py-2.5 bg-white border-2 border-[#E8D3C3] rounded-xl focus:outline-none focus:border-[#F7C5CC] font-bold text-sm transition">
+                </div>
+
+                <div>
+                    <label for="bottomTextInput" class="block text-sm font-bold text-[#4A3B32] mb-1">
+                        ✏️ 3. 下方文字 (Bottom Text)
+                    </label>
+                    <input type="text" id="bottomTextInput" value="一次就通過測試時" placeholder="輸入下方文字..." 
+                           class="w-full px-4 py-2.5 bg-white border-2 border-[#E8D3C3] rounded-xl focus:outline-none focus:border-[#F7C5CC] font-bold text-sm transition">
+                </div>
+            </div>
+
+            <!-- 3. 滑桿參數控制面板 -->
+            <div class="space-y-4 bg-[#FAF0E6] p-4 rounded-2xl border border-[#E8D3C3]">
+                <!-- 字體大小滑桿 -->
+                <div>
+                    <div class="flex justify-between text-xs font-bold text-[#4A3B32] mb-1">
+                        <span>🔤 文字大小 (Font Size)</span>
+                        <span id="fontSizeVal">36px</span>
+                    </div>
+                    <input type="range" id="fontSizeSlider" min="16" max="72" value="36" class="w-full h-2 bg-white rounded-lg appearance-none cursor-pointer">
+                </div>
+
+                <!-- 上方文字垂直位置滑桿 -->
+                <div>
+                    <div class="flex justify-between text-xs font-bold text-[#4A3B32] mb-1">
+                        <span>⬆️ 上方文字位置 (Top Offset)</span>
+                        <span id="topPosVal">5%</span>
+                    </div>
+                    <input type="range" id="topPosSlider" min="0" max="40" value="5" class="w-full h-2 bg-white rounded-lg appearance-none cursor-pointer">
+                </div>
+
+                <!-- 下方文字垂直位置滑桿 -->
+                <div>
+                    <div class="flex justify-between text-xs font-bold text-[#4A3B32] mb-1">
+                        <span>⬇️ 下方文字位置 (Bottom Offset)</span>
+                        <span id="bottomPosVal">5%</span>
+                    </div>
+                    <input type="range" id="bottomPosSlider" min="0" max="40" value="5" class="w-full h-2 bg-white rounded-lg appearance-none cursor-pointer">
+                </div>
+
+                <!-- 文字顏色與外框切換 (增強自訂度) -->
+                <div class="flex items-center justify-between pt-2 border-t border-[#E8D3C3]">
+                    <span class="text-xs font-bold text-[#4A3B32]">🎨 文字填充顏色</span>
+                    <input type="color" id="textColorPicker" value="#FFFFFF" class="w-9 h-9 p-0.5 rounded-lg border-2 border-[#E8D3C3] cursor-pointer bg-white">
+                </div>
+            </div>
+
+            <!-- 4. 超酷一鍵下載按鈕 -->
+            <div class="pt-2">
+                <button id="downloadBtn" onclick="downloadMeme()" class="w-full yakult-btn py-3.5 rounded-2xl font-black text-base flex items-center justify-center gap-2 shadow-md">
+                    <span>✨ 一鍵下載專屬迷因 (PNG)</span>
+                </button>
+            </div>
+
+        </section>
+
+        <!-- 右側：迷因即時預覽區塊 (7 欄) -->
+        <section class="lg:col-span-7 flex flex-col items-center">
+            
+            <div class="w-full yakult-card p-4 md:p-6 flex flex-col items-center">
+                <div class="w-full flex justify-between items-center mb-4 px-2">
+                    <span class="font-bold text-sm text-[#8C7A6B] flex items-center gap-1">
+                        <span>👁️</span> 即時預覽畫布 (Preview)
+                    </span>
+                    <span class="text-xs font-bold text-[#F5B08A] bg-[#FFF0E6] px-3 py-1 rounded-full border border-[#F5B08A]">
+                        自動響應尺寸
+                    </span>
+                </div>
+
+                <!-- 截圖目標區域：包含底圖與疊加文字 -->
+                <div id="meme-preview-area" class="relative overflow-hidden rounded-xl bg-[#EFEFEF] border-2 border-[#E8D3C3] max-w-full flex items-center justify-center shadow-inner min-h-[320px]" style="line-height:0;">
+                    
+                    <!-- 迷因背景圖片 -->
+                    <img id="memeImage" src="" alt="Meme Preview" class="max-w-full max-h-[550px] object-contain block select-none">
+
+                    <!-- 上方文字 (Top Text Overlay) -->
+                    <div id="memeTopText" class="meme-text-styled absolute w-full px-4 left-0 top-[5%] leading-tight text-white uppercase">
+                        當你寫 CODE
+                    </div>
+
+                    <!-- 下方文字 (Bottom Text Overlay) -->
+                    <div id="memeBottomText" class="meme-text-styled absolute w-full px-4 left-0 bottom-[5%] leading-tight text-white uppercase">
+                        一次就通過測試時
+                    </div>
+
+                </div>
+
+                <!-- 下方可愛提示語 -->
+                <p class="text-xs text-[#8C7A6B] mt-4 font-medium text-center">
+                    🐾 提示：文字將會自動加上黑邊，無論背景是深色或淺色都能清晰可見！
+                </p>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- 頁腳 -->
+    <footer class="max-w-6xl mx-auto text-center mt-12 mb-6 text-xs text-[#8C7A6B] font-bold">
+        <p>Made with 🍼 & ❤️ 養樂多粉膚色小狗風格迷因產生器</p>
+    </footer>
+
+    <!-- JavaScript 邏輯處理區 -->
+    <script>
+        // --- 1. DOM 元素選取 (抓取頁面上的控制項) ---
+        const imageUploader = document.getElementById('imageUploader');
+        const memeImage = document.getElementById('memeImage');
+        
+        const topTextInput = document.getElementById('topTextInput');
+        const bottomTextInput = document.getElementById('bottomTextInput');
+        const memeTopText = document.getElementById('memeTopText');
+        const memeBottomText = document.getElementById('memeBottomText');
+
+        const fontSizeSlider = document.getElementById('fontSizeSlider');
+        const fontSizeVal = document.getElementById('fontSizeVal');
+        
+        const topPosSlider = document.getElementById('topPosSlider');
+        const topPosVal = document.getElementById('topPosVal');
+        
+        const bottomPosSlider = document.getElementById('bottomPosSlider');
+        const bottomPosVal = document.getElementById('bottomPosVal');
+        
+        const textColorPicker = document.getElementById('textColorPicker');
+
+        // --- 2. 預設 SVG 可愛範本圖片 (避免初始預覽為空白，且完全無 CORS 問題) ---
+        const defaultTemplates = {
+            // 可愛養樂多粉膚小狗 SVG (Inline Data URL)
+            puppy: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600"><rect width="600" height="600" fill="%23FAF0E6"/><path d="M180,220 C140,120 220,80 260,180 Z" fill="%23F7C5CC" stroke="%234A3B32" stroke-width="12"/><path d="M420,220 C460,120 380,80 340,180 Z" fill="%23F7C5CC" stroke="%234A3B32" stroke-width="12"/><circle cx="300" cy="320" r="160" fill="%23FDF7F2" stroke="%234A3B32" stroke-width="12"/><circle cx="230" cy="280" r="22" fill="%234A3B32"/><circle cx="370" cy="280" r="22" fill="%234A3B32"/><circle cx="238" cy="274" r="7" fill="%23FFFFFF"/><circle cx="378" cy="274" r="7" fill="%23FFFFFF"/><ellipse cx="300" cy="320" rx="30" ry="22" fill="%234A3B32"/><path d="M270,350 Q300,380 330,350" fill="none" stroke="%234A3B32" stroke-width="10" stroke-linecap="round"/><ellipse cx="190" cy="330" rx="25" ry="15" fill="%23F7C5CC" opacity="0.7"/><ellipse cx="410" cy="330" rx="25" ry="15" fill="%23F7C5CC" opacity="0.7"/><rect x="420" y="380" width="100" height="140" rx="20" fill="%23F7C5CC" stroke="%234A3B32" stroke-width="8"/><text x="470" y="460" font-family="sans-serif" font-weight="bold" font-size="28" fill="%234A3B32" text-anchor="middle">Yakult</text></svg>`,
+            
+            // 驚嚇貓咪 SVG
+            cat: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600"><rect width="600" height="600" fill="%23E8D3C3"/><path d="M150,150 L250,220 L180,300 Z" fill="%23F4A6B0" stroke="%234A3B32" stroke-width="10"/><path d="M450,150 L350,220 L420,300 Z" fill="%23F4A6B0" stroke="%234A3B32" stroke-width="10"/><circle cx="300" cy="340" r="170" fill="%23FFFBF7" stroke="%234A3B32" stroke-width="10"/><ellipse cx="220" cy="300" rx="35" ry="45" fill="%23F5B08A"/><ellipse cx="380" cy="300" rx="35" ry="45" fill="%23F5B08A"/><circle cx="220" cy="300" r="15" fill="%234A3B32"/><circle cx="380" cy="300" r="15" fill="%234A3B32"/><polygon points="300,340 285,360 315,360" fill="%23F4A6B0"/><circle cx="300" cy="400" r="35" fill="%234A3B32"/></svg>`,
+
+            // 咖啡盃 SVG
+            coffee: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600"><rect width="600" height="600" fill="%23F5B08A"/><rect x="180" y="200" width="240" height="260" rx="30" fill="%23FFFBF7" stroke="%234A3B32" stroke-width="12"/><path d="M420,260 C480,260 480,380 420,380" fill="none" stroke="%234A3B32" stroke-width="14" stroke-linecap="round"/><circle cx="250" cy="300" r="12" fill="%234A3B32"/><circle cx="350" cy="300" r="12" fill="%234A3B32"/><path d="M280,350 Q300,330 320,350" fill="none" stroke="%234A3B32" stroke-width="8" stroke-linecap="round"/><path d="M240,140 Q250,110 240,80" fill="none" stroke="%23FFFBF7" stroke-width="8" stroke-linecap="round"/><path d="M300,140 Q310,110 300,80" fill="none" stroke="%23FFFBF7" stroke-width="8" stroke-linecap="round"/><path d="M360,140 Q370,110 360,80" fill="none" stroke="%23FFFBF7" stroke-width="8" stroke-linecap="round"/></svg>`
+        };
+
+        // --- 3. 初始化預設視圖 ---
+        window.addEventListener('DOMContentLoaded', () => {
+            // 載入預設小狗圖案
+            memeImage.src = defaultTemplates.puppy;
+            updateMemeText();
+            updateStyles();
+        });
+
+        // --- 4. 讀取使用者本機檔案 (FileReader API) ---
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                // 將圖片檔案讀取為 DataURL 格式 (免伺服器，絕不觸發 CORS 跨域限制)
+                reader.onload = function(e) {
+                    memeImage.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // --- 5. 載入內建範本圖案 ---
+        function loadTemplate(key) {
+            if (defaultTemplates[key]) {
+                memeImage.src = defaultTemplates[key];
+            }
+        }
+
+        // --- 6. 即時同步文字內容 ---
+        function updateMemeText() {
+            memeTopText.innerText = topTextInput.value || '';
+            memeBottomText.innerText = bottomTextInput.value || '';
+        }
+
+        topTextInput.addEventListener('input', updateMemeText);
+        bottomTextInput.addEventListener('input', updateMemeText);
+
+        // --- 7. 即時更新文字樣式 (字型大小、位置、顏色) ---
+        function updateStyles() {
+            const fontSize = fontSizeSlider.value;
+            const topPos = topPosSlider.value;
+            const bottomPos = bottomPosSlider.value;
+            const textColor = textColorPicker.value;
+
+            // 更新顯示數值
+            fontSizeVal.innerText = `${fontSize}px`;
+            topPosVal.innerText = `${topPos}%`;
+            bottomPosVal.innerText = `${bottomPos}%`;
+
+            // 套用到 DOM 樣式
+            memeTopText.style.fontSize = `${fontSize}px`;
+            memeBottomText.style.fontSize = `${fontSize}px`;
+
+            memeTopText.style.top = `${topPos}%`;
+            memeBottomText.style.bottom = `${bottomPos}%`;
+
+            memeTopText.style.color = textColor;
+            memeBottomText.style.color = textColor;
+        }
+
+        fontSizeSlider.addEventListener('input', updateStyles);
+        topPosSlider.addEventListener('input', updateStyles);
+        bottomPosSlider.addEventListener('input', updateStyles);
+        textColorPicker.addEventListener('input', updateStyles);
+
+        // --- 8. 一鍵下載迷因圖檔 (html2canvas 實作) ---
+        function downloadMeme() {
+            const previewArea = document.getElementById('meme-preview-area');
+            const downloadBtn = document.getElementById('downloadBtn');
+
+            // 提示使用者正在處理中
+            const originalBtnText = downloadBtn.innerHTML;
+            downloadBtn.innerHTML = '⏳ 正在產生圖片中...';
+            downloadBtn.disabled = true;
+
+            // 使用 html2canvas 將 HTML 區塊轉為 Canvas 畫布
+            html2canvas(previewArea, {
+                scale: 2,           // 2倍高清解析度渲染
+                useCORS: true,      // 允許跨域圖片 (若有)
+                backgroundColor: null, // 保持背景透明度
+                logging: false
+            }).then(canvas => {
+                // 將 Canvas 轉為 Base64 圖片 URL
+                const imageUrl = canvas.toDataURL("image/png");
+
+                // 創建虛擬 <a> 標籤觸發下載
+                const downloadLink = document.createElement('a');
+                downloadLink.href = imageUrl;
+                downloadLink.download = 'my-meme.png'; // 檔名：my-meme.png
+                
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+
+                // 恢復按鈕狀態
+                downloadBtn.innerHTML = originalBtnText;
+                downloadBtn.disabled = false;
+            }).catch(err => {
+                console.error("迷因下載失敗: ", err);
+                alert("圖片產生失敗，請再試一次！");
+                downloadBtn.innerHTML = originalBtnText;
+                downloadBtn.disabled = false;
+            });
+        }
+    </script>
+</body>
+</html>
