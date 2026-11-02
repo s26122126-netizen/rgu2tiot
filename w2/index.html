@@ -1,491 +1,579 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>極客迷因產生器 - Cyberpunk Meme Studio</title>
-  
-  <!-- 引入 Tailwind CSS 快速樣式庫 -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- 引入 Google Fonts 迷因字體：Anton, Impact 替代, Montserrat, Black Ops One -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Black+Ops+One&family=Montserrat:ital,wght@0,800;1,800&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
-  <!-- 引入 html2canvas 用於將網頁區塊轉為圖片下載 -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>今天吃什麼？隨機美食抽籤機</title>
+    <!-- 引入 FontAwesome 圖示庫 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 引入 Google Fonts 可愛字型 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- 引入 Canvas Confetti 慶祝紙花套件 -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-  <style>
-    /* 全域字體設置 */
-    body {
-      font-family: 'Noto Sans TC', sans-serif;
-      background-color: #0f172a;
-      color: #f8fafc;
-    }
+    <style>
+        /* 全局變數與樣式設定 - 黃橘色系 */
+        :root {
+            --primary-yellow: #FFB703;
+            --primary-orange: #FB8500;
+            --dark-orange: #E05300;
+            --light-yellow: #FFF9E6;
+            --bg-gradient: linear-gradient(135deg, #FFB703 0%, #FD9E02 50%, #FB8500 100%);
+            --text-color: #333333;
+            --white: #FFFFFF;
+            --shadow: 0 10px 25px rgba(251, 133, 0, 0.25);
+            --radius: 28px;
+        }
 
-    /* 迷因專用字體 Class 設定 */
-    .font-meme-anton { font-family: 'Anton', 'Impact', sans-serif; }
-    .font-meme-montserrat { font-family: 'Montserrat', sans-serif; font-weight: 900; }
-    .font-meme-blackops { font-family: 'Black Ops One', cursive; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-    /* 網格背景紋理效果 */
-    .cyber-grid {
-      background-size: 30px 30px;
-      background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-    }
+        body {
+            font-family: 'Fredoka', 'Noto Sans TC', sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: var(--text-color);
+            position: relative;
+            overflow-x: hidden;
+        }
 
-    /* 霓虹發光效果與玻璃擬態 */
-    .glow-cyan {
-      box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
-    }
-    .glow-pink {
-      box-shadow: 0 0 20px rgba(236, 72, 153, 0.5);
-    }
-    .glass-card {
-      background: rgba(30, 41, 59, 0.7);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
+        /* 背景可愛美食漂浮動畫 */
+        .bg-decorations .food-icon {
+            position: absolute;
+            font-size: 2.8rem;
+            opacity: 0.25;
+            animation: float 6s infinite ease-in-out;
+            user-select: none;
+            pointer-events: none;
+        }
 
-    /* 滑桿樣式客製化 */
-    input[type=range] {
-      accent-color: #06b6d4;
-    }
+        .pos-1 { top: 8%; left: 6%; animation-delay: 0s; }
+        .pos-2 { top: 15%; right: 8%; animation-delay: 1s; }
+        .pos-3 { bottom: 12%; left: 10%; animation-delay: 2s; }
+        .pos-4 { bottom: 20%; right: 6%; animation-delay: 3s; }
+        .pos-5 { top: 48%; left: 3%; animation-delay: 4s; }
+        .pos-6 { top: 55%; right: 4%; animation-delay: 5s; }
 
-    /* 迷因文字預設描邊效果 (使用 CSS 文字外框與文字陰影確保清晰度) */
-    .meme-text-styled {
-      word-wrap: break-word;
-      line-height: 1.1;
-      text-align: center;
-      user-select: none;
-      white-space: pre-wrap;
-    }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-22px) rotate(12deg); }
+        }
 
-    /* 隱藏原生檔案上傳按鈕 */
-    input[type="file"] {
-      display: none;
-    }
-  </style>
+        /* 主卡片容器 */
+        .container {
+            background: var(--white);
+            width: 100%;
+            max-width: 460px;
+            padding: 32px 24px;
+            border-radius: var(--radius);
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.18);
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            border: 4px solid #FFE8B5;
+        }
+
+        /* 頂部標題 */
+        .subtitle-badge {
+            display: inline-block;
+            background-color: var(--light-yellow);
+            color: var(--dark-orange);
+            padding: 6px 18px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            border: 1px solid #FFE099;
+        }
+
+        #main-title {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: var(--dark-orange);
+            margin-bottom: 20px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        /* 生動彈跳動畫 (bounceIn) */
+        .bounce-in {
+            animation: bounceIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3) rotate(-5deg); opacity: 0; }
+            50% { transform: scale(1.1) rotate(3deg); }
+            70% { transform: scale(0.95) rotate(-1deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        /* 滾動抽獎顯示框 */
+        .slot-container {
+            background: var(--light-yellow);
+            border: 3px dashed var(--primary-yellow);
+            border-radius: 20px;
+            padding: 20px;
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: var(--primary-orange);
+            margin-bottom: 20px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 結果展示卡片 */
+        .result-card {
+            background: var(--white);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 2px solid #FFE5B4;
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .result-card.hidden {
+            display: none;
+        }
+
+        .img-wrapper {
+            position: relative;
+            width: 100%;
+            height: 220px;
+            overflow: hidden;
+            background-color: #FFF3E0;
+        }
+
+        .img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .tag {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: var(--primary-orange);
+            color: var(--white);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        .card-body {
+            padding: 18px;
+        }
+
+        #result-name {
+            font-size: 1.7rem;
+            font-weight: 900;
+            color: #2D1A00;
+            margin-bottom: 14px;
+        }
+
+        /* 「馬上出發」按鈕 */
+        .map-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            background: #10B981; /* 活潑綠色導航按鈕 */
+            color: var(--white);
+            text-decoration: none;
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 1.05rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .map-btn:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        /* 點我抽籤大按鈕 */
+        .action-zone {
+            margin-bottom: 20px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(180deg, #FFB703 0%, #FB8500 100%);
+            color: var(--white);
+            border: none;
+            width: 100%;
+            padding: 16px;
+            border-radius: 50px;
+            font-size: 1.4rem;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(251, 133, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+            outline: none;
+            border-bottom: 4px solid var(--dark-orange);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 25px rgba(251, 133, 0, 0.5);
+        }
+
+        .btn-primary:active {
+            transform: translateY(2px) scale(0.98);
+            border-bottom-width: 2px;
+        }
+
+        /* 可摺疊管理選單區 */
+        .list-manager {
+            background: #FFFBF2;
+            border-radius: 18px;
+            padding: 14px;
+            text-align: left;
+            font-size: 0.9rem;
+            border: 1.5px solid #FFE8B5;
+        }
+
+        .list-manager summary {
+            font-weight: 700;
+            color: var(--dark-orange);
+            cursor: pointer;
+            user-select: none;
+            outline: none;
+        }
+
+        .manager-content {
+            margin-top: 12px;
+        }
+
+        .add-form {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .add-form input {
+            padding: 8px 12px;
+            border: 1px solid #FFD8A8;
+            border-radius: 10px;
+            outline: none;
+            font-size: 0.85rem;
+        }
+
+        .add-form input:focus {
+            border-color: var(--primary-orange);
+        }
+
+        .btn-add {
+            background: var(--primary-orange);
+            color: var(--white);
+            border: none;
+            padding: 8px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-add:hover {
+            background: var(--dark-orange);
+        }
+
+        .restaurant-list {
+            list-style: none;
+            max-height: 140px;
+            overflow-y: auto;
+        }
+
+        .restaurant-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 8px;
+            border-bottom: 1px solid #FFE8B5;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #555;
+        }
+
+        .del-btn {
+            background: none;
+            border: none;
+            color: #EF4444;
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: 6px;
+        }
+
+        .del-btn:hover {
+            background: #FEE2E2;
+        }
+    </style>
 </head>
+<body>
 
-<body class="min-h-screen cyber-grid flex flex-col justify-between p-4 md:p-8">
-
-  <header class="max-w-6xl mx-auto w-full mb-6 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-4">
-    <div>
-      <h1 class="text-3xl md:text-4xl font-extrabold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-pink-500 to-yellow-400">
-        ⚡ MEME GENERATOR
-      </h1>
-      <p class="text-xs md:text-sm text-slate-400 mt-1">打造你的專屬賽博迷因，即時上傳、編輯與一鍵導出</p>
+    <!-- 背景漂浮美食圖示 -->
+    <div class="bg-decorations">
+        <span class="food-icon pos-1">🍧</span>
+        <span class="food-icon pos-2">🍳</span>
+        <span class="food-icon pos-3">🍝</span>
+        <span class="food-icon pos-4">🦆</span>
+        <span class="food-icon pos-5">🍱</span>
+        <span class="food-icon pos-6">🧋</span>
     </div>
-    <div class="flex items-center gap-2">
-      <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-      <span class="text-xs text-slate-300 font-mono">SYSTEM READY</span>
-    </div>
-  </header>
 
-  <main class="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-8">
-    
-    <!-- 左側：控制面板 Control Panel (佔 5 欄) -->
-    <section class="lg:col-span-5 glass-card rounded-2xl p-5 md:p-6 shadow-2xl space-y-5">
-      <h2 class="text-lg font-bold text-cyan-400 border-b border-slate-700 pb-2 flex items-center gap-2">
-        <span>🎛️</span> 迷因編輯控制台
-      </h2>
-
-      <!-- 1. 圖片上傳區塊 -->
-      <div>
-        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">1. 選擇或上傳底圖</label>
-        <div 
-          id="drop-zone"
-          onclick="document.getElementById('image-input').click()"
-          class="border-2 border-dashed border-slate-600 hover:border-cyan-400 transition-colors duration-300 rounded-xl p-4 text-center cursor-pointer bg-slate-800/50 flex flex-col items-center justify-center gap-2"
-        >
-          <svg class="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-          </svg>
-          <span class="text-sm font-medium text-slate-300">點擊此處或拖曳圖片至此</span>
-          <span class="text-xs text-slate-500">支援 JPG, PNG, WEBP 等格式</span>
-        </div>
-        <!-- 隱藏的 input 欄位，由 JavaScript 觸發 -->
-        <input type="file" id="image-input" accept="image/*">
-      </div>
-
-      <!-- 2. 文字輸入區塊 -->
-      <div class="space-y-3">
-        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">2. 設定文字內容</label>
-        <div>
-          <span class="text-xs text-slate-400 mb-1 block">上方文字 (Top Text)</span>
-          <input 
-            type="text" 
-            id="top-text-input" 
-            placeholder="請輸入上方文字..." 
-            value="WHEN CODE WORKS"
-            class="w-full bg-slate-900/80 border border-slate-700 focus:border-cyan-400 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-cyan-400 transition"
-          >
-        </div>
-        <div>
-          <span class="text-xs text-slate-400 mb-1 block">下方文字 (Bottom Text)</span>
-          <input 
-            type="text" 
-            id="bottom-text-input" 
-            placeholder="請輸入下方文字..." 
-            value="ON THE FIRST TRY"
-            class="w-full bg-slate-900/80 border border-slate-700 focus:border-cyan-400 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-cyan-400 transition"
-          >
-        </div>
-      </div>
-
-      <!-- 3. 字體樣式與顏色設定 -->
-      <div class="space-y-3">
-        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">3. 字體與色彩調整</label>
+    <!-- 主介面卡片 -->
+    <div class="container">
         
-        <div class="grid grid-cols-2 gap-3">
-          <!-- 字型選擇 -->
-          <div>
-            <span class="text-xs text-slate-400 mb-1 block">字型種類</span>
-            <select id="font-family-select" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-2 text-xs text-white focus:outline-none focus:border-cyan-400">
-              <option value="font-meme-anton">Anton / Impact (經典)</option>
-              <option value="font-meme-montserrat">Montserrat (粗黑體)</option>
-              <option value="font-meme-blackops">Black Ops (軍事風)</option>
-            </select>
-          </div>
-          <!-- 轉換全大寫切換 -->
-          <div>
-            <span class="text-xs text-slate-400 mb-1 block">英文大寫</span>
-            <button id="uppercase-btn" class="w-full bg-cyan-950 border border-cyan-700 text-cyan-300 rounded-lg py-2 text-xs font-medium hover:bg-cyan-900 transition">
-              全大寫: 開啟
+        <!-- 頂部區 -->
+        <header>
+            <div class="subtitle-badge">✨ 今天吃什麼隨機抽籤機 ✨</div>
+            <h1 id="main-title">今天吃什麼？</h1>
+        </header>
+
+        <!-- 滾動抽籤動畫顯示區 -->
+        <div id="slot-machine" class="slot-container">
+            <span id="slot-text">🎲 按下方按鈕開抽！</span>
+        </div>
+
+        <!-- 抽籤結果卡片 (預設隱藏) -->
+        <div id="result-card" class="result-card hidden">
+            <div class="img-wrapper">
+                <img id="result-img" src="" alt="美食照片">
+                <span class="tag">今日首選</span>
+            </div>
+            <div class="card-body">
+                <h2 id="result-name">餐廳名稱</h2>
+                <a id="map-btn" class="map-btn" href="#" target="_blank" rel="noopener noreferrer">
+                    <i class="fa-solid fa-location-dot"></i> 馬上出發 🚀
+                </a>
+            </div>
+        </div>
+
+        <!-- 抽籤大按鈕 -->
+        <div class="action-zone">
+            <button id="draw-btn" class="btn-primary">
+                <span>點我抽籤</span>
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
             </button>
-          </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
-          <!-- 文字填滿顏色 -->
-          <div class="flex items-center justify-between bg-slate-900/50 p-2 rounded-lg border border-slate-800">
-            <span class="text-xs text-slate-300">文字顏色</span>
-            <input type="color" id="text-color-picker" value="#ffffff" class="w-7 h-7 bg-transparent cursor-pointer rounded">
-          </div>
-          <!-- 邊框顏色 -->
-          <div class="flex items-center justify-between bg-slate-900/50 p-2 rounded-lg border border-slate-800">
-            <span class="text-xs text-slate-300">外框顏色</span>
-            <input type="color" id="stroke-color-picker" value="#000000" class="w-7 h-7 bg-transparent cursor-pointer rounded">
-          </div>
-        </div>
-      </div>
+        <!-- 可摺疊美食清單管理區 -->
+        <details class="list-manager">
+            <summary><i class="fa-solid fa-list-check"></i> 查看 / 編輯口袋餐廳清單</summary>
+            <div class="manager-content">
+                <div class="add-form">
+                    <input type="text" id="new-name" placeholder="餐廳名稱 (例如: 永和豆漿)">
+                    <input type="text" id="new-img" placeholder="圖片網址 (可選填)">
+                    <button id="add-btn" class="btn-add">加入清單</button>
+                </div>
+                <ul id="restaurant-list" class="restaurant-list">
+                    <!-- 由 JavaScript 動態繪製 -->
+                </ul>
+            </div>
+        </details>
+    </div>
 
-      <!-- 4. 滑桿微調區塊 -->
-      <div class="space-y-3 pt-2 border-t border-slate-700/50">
-        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">4. 位置與大小微調</label>
+    <script>
+        // JS 邏輯完全包覆在 DOMContentLoaded 事件中，確保 DOM 載入完畢後才執行
+        document.addEventListener('DOMContentLoaded', () => {
 
-        <!-- 字體大小滑桿 -->
-        <div>
-          <div class="flex justify-between text-xs text-slate-400 mb-1">
-            <span>字體大小 (Font Size)</span>
-            <span id="font-size-val">36px</span>
-          </div>
-          <input type="range" id="font-size-slider" min="16" max="72" value="36" class="w-full">
-        </div>
+            // 1. 指定的 5 家預設餐廳與精選圖片
+            const defaultRestaurants = [
+                {
+                    name: "癮冰室",
+                    img: "https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=600&q=80"
+                },
+                {
+                    name: "遊子廚房",
+                    img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80"
+                },
+                {
+                    name: "傑克廚房",
+                    img: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80"
+                },
+                {
+                    name: "華仁匯",
+                    img: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=600&q=80"
+                },
+                {
+                    name: "鴨肉飯",
+                    img: "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=600&q=80"
+                }
+            ];
 
-        <!-- 上方文字位置滑桿 -->
-        <div>
-          <div class="flex justify-between text-xs text-slate-400 mb-1">
-            <span>上方文字垂直位置 (Top Pos)</span>
-            <span id="top-pos-val">5%</span>
-          </div>
-          <input type="range" id="top-pos-slider" min="0" max="40" value="5" class="w-full">
-        </div>
+            // 優先讀取 LocalStorage 或使用預設值
+            let restaurants = JSON.parse(localStorage.getItem('my_restaurants')) || defaultRestaurants;
 
-        <!-- 下方文字位置滑桿 -->
-        <div>
-          <div class="flex justify-between text-xs text-slate-400 mb-1">
-            <span>下方文字垂直位置 (Bottom Pos)</span>
-            <span id="bottom-pos-val">5%</span>
-          </div>
-          <input type="range" id="bottom-pos-slider" min="0" max="40" value="5" class="w-full">
-        </div>
-      </div>
+            // 2. DOM 元素綁定
+            const mainTitle = document.getElementById('main-title');
+            const drawBtn = document.getElementById('draw-btn');
+            const slotContainer = document.getElementById('slot-machine');
+            const slotText = document.getElementById('slot-text');
+            const resultCard = document.getElementById('result-card');
+            const resultImg = document.getElementById('result-img');
+            const resultName = document.getElementById('result-name');
+            const mapBtn = document.getElementById('map-btn');
+            const restaurantListUI = document.getElementById('restaurant-list');
+            const newNameInput = document.getElementById('new-name');
+            const newImgInput = document.getElementById('new-img');
+            const addBtn = document.getElementById('add-btn');
 
-      <!-- 5. 下載按鈕 -->
-      <button 
-        id="download-btn"
-        class="w-full py-3.5 px-4 bg-gradient-to-r from-cyan-500 to-pink-500 hover:from-cyan-400 hover:to-pink-400 text-white font-bold rounded-xl shadow-lg glow-pink transition transform active:scale-95 flex items-center justify-center gap-2 mt-4"
-      >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-        </svg>
-        一鍵下載迷因圖檔 (PNG)
-      </button>
-    </section>
+            let isDrawing = false; // 動畫防連點鎖定
 
-    <!-- 右側：迷因預覽區 Meme Preview Area (佔 7 欄) -->
-    <section class="lg:col-span-7 flex flex-col items-center justify-center">
-      <div class="w-full glass-card p-4 rounded-2xl shadow-2xl flex flex-col items-center">
-        <div class="w-full flex justify-between items-center mb-3 px-2">
-          <span class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
-            <span class="w-2 h-2 rounded-full bg-cyan-400"></span> Live Preview 實時預覽
-          </span>
-          <span class="text-xs text-slate-500" id="image-dimensions">800 x 600 px</span>
-        </div>
+            // 3. 渲染口袋清單
+            function renderList() {
+                restaurantListUI.innerHTML = '';
+                restaurants.forEach((item, index) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <span>${index + 1}. ${item.name}</span>
+                        <button class="del-btn" data-index="${index}" title="刪除">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    `;
+                    restaurantListUI.appendChild(li);
+                });
 
-        <!-- 迷因容器：此區塊將被 html2canvas 截圖轉為 PNG -->
-        <div 
-          id="meme-container" 
-          class="relative overflow-hidden rounded-xl bg-slate-950 flex items-center justify-center max-w-full shadow-inner select-none border border-slate-800"
-          style="min-height: 300px;"
-        >
-          <!-- 底圖背景 -->
-          <img 
-            id="meme-image" 
-            src="https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800&auto=format&fit=crop&q=80" 
-            alt="Meme Background" 
-            class="w-full h-auto max-h-[70vh] object-contain block pointer-events-none"
-            crossorigin="anonymous"
-          >
+                // 綁定刪除按鈕事件
+                document.querySelectorAll('.del-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const idx = e.currentTarget.getAttribute('data-index');
+                        deleteRestaurant(idx);
+                    });
+                });
+            }
 
-          <!-- 上方文字覆蓋層 -->
-          <div 
-            id="meme-top-text" 
-            class="absolute w-full px-4 meme-text-styled font-meme-anton uppercase"
-            style="top: 5%; color: #ffffff; font-size: 36px;"
-          >
-            WHEN CODE WORKS
-          </div>
+            // 儲存至本地快取
+            function saveData() {
+                localStorage.setItem('my_restaurants', JSON.stringify(restaurants));
+                renderList();
+            }
 
-          <!-- 下方文字覆蓋層 -->
-          <div 
-            id="meme-bottom-text" 
-            class="absolute w-full px-4 meme-text-styled font-meme-anton uppercase"
-            style="bottom: 5%; color: #ffffff; font-size: 36px;"
-          >
-            ON THE FIRST TRY
-          </div>
-        </div>
+            // 新增餐廳
+            addBtn.addEventListener('click', () => {
+                const name = newNameInput.value.trim();
+                const img = newImgInput.value.trim() || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=80";
 
-        <p class="text-xs text-slate-500 mt-3 text-center">提示：點擊「下載」按鈕時會導出當前預覽框內的完整內容</p>
-      </div>
-    </section>
+                if (name === '') {
+                    alert('請輸入餐廳名稱喔！');
+                    return;
+                }
 
-  </main>
+                restaurants.push({ name, img });
+                newNameInput.value = '';
+                newImgInput.value = '';
+                saveData();
+            });
 
-  <!-- 頁腳 -->
-  <footer class="max-w-6xl mx-auto w-full text-center text-xs text-slate-500 py-4 border-t border-slate-800">
-    <p>© 2026 Cyberpunk Meme Generator | HTML5 Canvas & Tailwind Powered</p>
-  </footer>
+            // 刪除餐廳
+            function deleteRestaurant(index) {
+                if (restaurants.length <= 1) {
+                    alert('請至少保留一家餐廳供抽籤喔！');
+                    return;
+                }
+                restaurants.splice(index, 1);
+                saveData();
+            }
 
-  <script>
-    // ==========================================
-    // 1. 取得頁面上的 DOM 元素 (取得控制項)
-    // ==========================================
-    const imageInput = document.getElementById('image-input');
-    const dropZone = document.getElementById('drop-zone');
-    const memeImage = document.getElementById('meme-image');
-    const memeContainer = document.getElementById('meme-container');
-    const imgDimensionsLabel = document.getElementById('image-dimensions');
+            // 4. 開始抽籤 (隨機滾動動畫)
+            function startDraw() {
+                if (isDrawing) return;
+                if (restaurants.length === 0) {
+                    alert('口袋清單目前沒有餐廳，請先新增！');
+                    return;
+                }
 
-    // 文字輸入框
-    const topTextInput = document.getElementById('top-text-input');
-    const bottomTextInput = document.getElementById('bottom-text-input');
+                isDrawing = true;
 
-    // 迷因文字顯示區塊
-    const memeTopText = document.getElementById('meme-top-text');
-    const memeBottomText = document.getElementById('meme-bottom-text');
+                // 隱藏結果卡片、重置標題狀態
+                resultCard.classList.add('hidden');
+                mainTitle.classList.remove('bounce-in');
+                mainTitle.innerText = "今天吃什麼？";
+                slotContainer.style.display = "flex";
 
-    // 樣式控制器
-    const fontFamilySelect = document.getElementById('font-family-select');
-    const uppercaseBtn = document.getElementById('uppercase-btn');
-    const textColorPicker = document.getElementById('text-color-picker');
-    const strokeColorPicker = document.getElementById('stroke-color-picker');
+                let counter = 0;
+                const totalRolls = 22; // 滾動輪播次數
+                const speed = 70; // 滾動頻率(ms)
 
-    // 滑桿控制器
-    const fontSizeSlider = document.getElementById('font-size-slider');
-    const fontSizeVal = document.getElementById('font-size-val');
-    const topPosSlider = document.getElementById('top-pos-slider');
-    const topPosVal = document.getElementById('top-pos-val');
-    const bottomPosSlider = document.getElementById('bottom-pos-slider');
-    const bottomPosVal = document.getElementById('bottom-pos-val');
+                const timer = setInterval(() => {
+                    const randomIndex = Math.floor(Math.random() * restaurants.length);
+                    slotText.innerText = `🎰 ${restaurants[randomIndex].name}`;
+                    counter++;
 
-    // 下載按鈕
-    const downloadBtn = document.getElementById('download-btn');
+                    if (counter >= totalRolls) {
+                        clearInterval(timer);
+                        finishDraw(randomIndex);
+                    }
+                }, speed);
+            }
 
-    // 狀態變數：紀錄是否強制英文大寫
-    let isUppercase = true;
+            // 5. 抽籤完成處理 (彈跳動畫 + 紙花爆發 + Google Map 連結)
+            function finishDraw(finalIndex) {
+                const selected = restaurants[finalIndex];
 
-    // ==========================================
-    // 2. 本機圖片上傳處理 (FileReader) - 避開 CORS
-    // ==========================================
-    // 當使用者選取檔案時發動
-    imageInput.addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (file) {
-        loadImageFromFile(file);
-      }
-    });
+                // 隱藏滾動顯示區
+                slotContainer.style.display = "none";
 
-    // 拖曳圖片上傳 (Drag and Drop)
-    dropZone.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      dropZone.classList.add('border-cyan-400', 'bg-slate-800');
-    });
+                // 設定抽中結果
+                resultImg.src = selected.img;
+                resultName.innerText = selected.name;
 
-    dropZone.addEventListener('dragleave', () => {
-      dropZone.classList.remove('border-cyan-400', 'bg-slate-800');
-    });
+                // 設定 Google Maps 導航搜尋連結
+                const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selected.name)}`;
+                mapBtn.href = mapUrl;
 
-    dropZone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      dropZone.classList.remove('border-cyan-400', 'bg-slate-800');
-      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-        loadImageFromFile(e.dataTransfer.files[0]);
-      }
-    });
+                // 用生動彈跳動畫替換標題
+                mainTitle.innerText = `🎉 今天就吃：${selected.name}！`;
+                void mainTitle.offsetWidth; // 觸發重繪
+                mainTitle.classList.add('bounce-in');
 
-    // 將 File 轉為 Base64 DataURL 並更新至圖片標籤
-    function loadImageFromFile(file) {
-      if (!file.type.startsWith('image/')) {
-        alert('請上傳有效的圖片檔案 (JPG, PNG, GIF, WEBP 等)！');
-        return;
-      }
+                // 顯示結果卡片
+                resultCard.classList.remove('hidden');
 
-      const reader = new FileReader();
-      // 讀取完成後的處理解析
-      reader.onload = function(event) {
-        memeImage.src = event.target.result;
-      };
-      // 以 DataURL 讀取檔案
-      reader.readAsDataURL(file);
-    }
+                // 播放慶祝紙花動畫 (Confetti)
+                if (typeof confetti === 'function') {
+                    confetti({
+                        particleCount: 90,
+                        spread: 75,
+                        origin: { y: 0.65 },
+                        colors: ['#FFB703', '#FB8500', '#E05300', '#10B981', '#FFFFFF']
+                    });
+                }
 
-    // 當圖片載入完成後更新尺寸提示
-    memeImage.addEventListener('load', () => {
-      imgDimensionsLabel.textContent = `${memeImage.naturalWidth} x ${memeImage.naturalHeight} px`;
-    });
+                isDrawing = false;
+            }
 
-    // ==========================================
-    // 3. 即時文字更新與外觀渲染邏輯
-    // ==========================================
-    function updateMemeText() {
-      // 處理文字大小寫轉換
-      let topVal = topTextInput.value;
-      let bottomVal = bottomTextInput.value;
+            // 6. 綁定按鈕點擊事件
+            drawBtn.addEventListener('click', startDraw);
 
-      if (isUppercase) {
-        topVal = topVal.toUpperCase();
-        bottomVal = bottomVal.toUpperCase();
-      }
-
-      // 更新內容
-      memeTopText.textContent = topVal;
-      memeBottomText.textContent = bottomVal;
-
-      // 更新字體大小
-      const size = fontSizeSlider.value;
-      fontSizeVal.textContent = `${size}px`;
-      memeTopText.style.fontSize = `${size}px`;
-      memeBottomText.style.fontSize = `${size}px`;
-
-      // 更新文字與描邊顏色 (透過 CSS -webkit-text-stroke 與 text-shadow)
-      const textColor = textColorPicker.value;
-      const strokeColor = strokeColorPicker.value;
-
-      memeTopText.style.color = textColor;
-      memeBottomText.style.color = textColor;
-
-      // 產生多層 text-shadow 確保所有瀏覽器包含下載時描邊清晰度
-      const strokeStyle = `
-        -1px -1px 0 ${strokeColor},  
-         1px -1px 0 ${strokeColor},
-        -1px  1px 0 ${strokeColor},
-         1px  1px 0 ${strokeColor},
-        -2px  2px 4px rgba(0,0,0,0.8)
-      `;
-      memeTopText.style.textShadow = strokeStyle;
-      memeBottomText.style.textShadow = strokeStyle;
-
-      // 更新垂直位置 Slider 數據
-      const topPos = topPosSlider.value;
-      topPosVal.textContent = `${topPos}%`;
-      memeTopText.style.top = `${topPos}%`;
-
-      const bottomPos = bottomPosSlider.value;
-      bottomPosVal.textContent = `${bottomPos}%`;
-      memeBottomText.style.bottom = `${bottomPos}%`;
-    }
-
-    // ==========================================
-    // 4. 事件監聽設定 (Event Listeners)
-    // ==========================================
-    // 文字輸入監聽
-    topTextInput.addEventListener('input', updateMemeText);
-    bottomTextInput.addEventListener('input', updateMemeText);
-
-    // 滑桿移動監聽
-    fontSizeSlider.addEventListener('input', updateMemeText);
-    topPosSlider.addEventListener('input', updateMemeText);
-    bottomPosSlider.addEventListener('input', updateMemeText);
-
-    // 顏色選擇監聽
-    textColorPicker.addEventListener('input', updateMemeText);
-    strokeColorPicker.addEventListener('input', updateMemeText);
-
-    // 字型選單改變
-    fontFamilySelect.addEventListener('change', (e) => {
-      const selectedFont = e.target.value;
-      // 清除舊字體，替換為新選字體
-      memeTopText.className = `absolute w-full px-4 meme-text-styled ${selectedFont}`;
-      memeBottomText.className = `absolute w-full px-4 meme-text-styled ${selectedFont}`;
-      updateMemeText();
-    });
-
-    // 全大寫開關按鈕
-    uppercaseBtn.addEventListener('click', () => {
-      isUppercase = !isUppercase;
-      uppercaseBtn.textContent = `全大寫: ${isUppercase ? '開啟' : '關閉'}`;
-      uppercaseBtn.classList.toggle('bg-cyan-950', isUppercase);
-      uppercaseBtn.classList.toggle('bg-slate-800', !isUppercase);
-      updateMemeText();
-    });
-
-    // ==========================================
-    // 5. 使用 html2canvas 一鍵導出與下載迷因
-    // ==========================================
-    downloadBtn.addEventListener('click', () => {
-      // 顯示下載處理中狀態
-      const originalText = downloadBtn.innerHTML;
-      downloadBtn.innerHTML = `
-        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        圖片生成中...
-      `;
-      downloadBtn.disabled = true;
-
-      // 使用 html2canvas 捕捉 meme-container 元素內容
-      html2canvas(memeContainer, {
-        useCORS: true, // 支援跨域圖片繪製
-        allowTaint: true,
-        scale: 2, // 提高畫質解析度 (2倍像素)
-        backgroundColor: null
-      }).then(canvas => {
-        // 將 canvas 轉為圖片下載連結
-        const link = document.createElement('a');
-        link.download = 'my-meme.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-
-        // 恢復按鈕原本樣式
-        downloadBtn.innerHTML = originalText;
-        downloadBtn.disabled = false;
-      }).catch(err => {
-        console.error('導出失敗:', err);
-        alert('導出圖片時發生錯誤，請稍後再試！');
-        downloadBtn.innerHTML = originalText;
-        downloadBtn.disabled = false;
-      });
-    });
-
-    // 初始化呼叫，載入預設畫面
-    updateMemeText();
-  </script>
+            // 初始化渲染口袋名單
+            renderList();
+        });
+    </script>
 </body>
 </html>
