@@ -31,3 +31,115 @@
 
 </body>
 </html>
+html {
+  height: 100%;
+  background: 50% 50% no-repeat
+    url('data:image/svg+xml,<svg viewBox="-20 -5 60 40" width="140" xmlns="http://www.w3.org/2000/svg" opacity="0.2"><path d="M1 8l11-7 11 7v8l-11 7-11-7zm0 0l11 8 11-8m0 8L12 8 1 16M12 1v7m0 8v7" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"/><text x="-12" y="32" font-size="5" font-family="monospace" fill="currentColor">Built on CodePen</text></svg>');
+}
+/* ===== 基礎設定 ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Noto Sans TC', sans-serif;
+    /* 馬卡龍漸層背景（淡粉紫到淡藍） */
+    background: linear-gradient(135deg, #ffd1dc 0%, #d4f0f0 100%);
+    min-height: 100vh;
+    /* 讓整張名片在螢幕正中央 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* ===== 名片卡片本體 ===== */
+.card {
+    background-color: #ffffff;
+    width: 100%;
+    max-width: 350px; /* 限制卡片最大寬度 */
+    padding: 40px 30px;
+    border-radius: 24px; /* 圓角效果 */
+    text-align: center; /* 內部內容全部置中 */
+    
+    /* 現代感柔和微陰影 */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    
+    /* 滑鼠懸停時的平滑過渡效果 */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* 滑鼠移到名片上時微浮起 */
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* ===== 1. 圓形大頭貼 ===== */
+.avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%; /* 變成正圓形 */
+    object-fit: cover; /* 確保照片不拉高變形 */
+    margin-bottom: 20px;
+    /* 給大頭貼一圈淡馬卡龍粉色邊框 */
+    border: 4px solid #ffb7c5;
+}
+
+/* ===== 2. 名字與簡介 ===== */
+.name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #4a4a4a; /* 深灰比純黑更有質感 */
+    margin-bottom: 8px;
+}
+
+.bio {
+    font-size: 0.95rem;
+    color: #7a7a7a;
+    line-height: 1.5;
+    margin-bottom: 30px;
+}
+
+/* ===== 3. 按鈕區域 ===== */
+.button-group {
+    display: flex;
+    flex-direction: column; /* 按鈕上下排列 */
+    gap: 12px; /* 按鈕之間的間隙 */
+}
+
+/* 按鈕共通樣式 */
+.btn {
+    display: block;
+    padding: 12px 20px;
+    border-radius: 50px; /* 膠囊狀按鈕 */
+    text-decoration: none; /* 移除超連結底線 */
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* 按鈕微陰影 */
+}
+
+/* Instagram 按鈕：馬卡龍粉橘色 */
+.btn-instagram {
+    background-color: #ffb7b2;
+    color: #ffffff;
+}
+
+.btn-instagram:hover {
+    background-color: #ff9e99;
+    transform: scale(1.02); /* 微放大 */
+}
+
+/* Email 按鈕：馬卡龍薄荷綠色 */
+.btn-email {
+    background-color: #b5ead7;
+    color: #2c5e4e;
+}
+
+.btn-email:hover {
+    background-color: #9fe2cb;
+    transform: scale(1.02); /* 微放大 */
+}
