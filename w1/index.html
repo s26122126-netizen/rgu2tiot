@@ -4,142 +4,204 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>個人數位名片</title>
-    <!-- 引入外部 CSS 樣式檔 -->
-    <link rel="stylesheet" href="style.css">
-    <!-- 引入 Google Fonts 字型（讓字體更現代好看） -->
+    <!-- 引入 Google Fonts (Noto Sans TC) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ===== 基礎設定 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            /* 馬卡龍漸層背景（淡粉紫到淡藍綠） */
+            background: linear-gradient(135deg, #ffd1dc 0%, #d4f0f0 100%);
+            min-height: 100vh;
+            /* 讓整張名片在螢幕正中央 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* ===== 名片卡片本體 ===== */
+        .card {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: 360px; /* 限制卡片最大寬度 */
+            padding: 40px 30px;
+            border-radius: 28px; /* 柔和圓角效果 */
+            text-align: center; /* 內部內容全部置中 */
+            
+            /* 現代感柔和微陰影 */
+            box-shadow: 0 15px 35px rgba(175, 156, 178, 0.2), 
+                        0 5px 15px rgba(0, 0, 0, 0.04);
+            
+            /* 滑鼠懸停時的平滑過渡效果 */
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                        box-shadow 0.4s ease;
+        }
+
+        /* 滑鼠移到名片上時微浮起 */
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 22px 40px rgba(175, 156, 178, 0.3), 
+                        0 8px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        /* ===== 1. 圓形大頭貼 ===== */
+        .avatar-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 24px;
+        }
+
+        .avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%; /* 變成正圓形 */
+            object-fit: cover; /* 確保照片不拉高變形 */
+            /* 淡馬卡龍粉色邊框與微陰影 */
+            border: 4px solid #ffc2d1;
+            box-shadow: 0 6px 16px rgba(255, 183, 197, 0.4);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover .avatar {
+            transform: scale(1.03);
+        }
+
+        /* ===== 2. 名字與簡介 ===== */
+        .name {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #4a4e69; /* 深暖灰紫，比純黑更有質感 */
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .tag {
+            display: inline-block;
+            background-color: #f3e8ee;
+            color: #9c7a97;
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 3px 12px;
+            border-radius: 20px;
+            margin-bottom: 14px;
+        }
+
+        .bio {
+            font-size: 0.95rem;
+            color: #6c757d;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        /* ===== 3. 按鈕區域 ===== */
+        .button-group {
+            display: flex;
+            flex-direction: column; /* 按鈕上下排列 */
+            gap: 14px; /* 按鈕之間的間隙 */
+        }
+
+        /* 按鈕共通樣式 */
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 24px;
+            border-radius: 50px; /* 膠囊狀按鈕 */
+            text-decoration: none; /* 移除超連結底線 */
+            font-size: 0.95rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* 按鈕微陰影 */
+        }
+
+        .btn svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        /* Instagram 按鈕：馬卡龍粉橘色 */
+        .btn-instagram {
+            background-color: #ffb7b2;
+            color: #ffffff;
+            box-shadow: 0 6px 15px rgba(255, 183, 178, 0.4);
+        }
+
+        .btn-instagram:hover {
+            background-color: #ffa59e;
+            transform: translateY(-2px) scale(1.02); /* 微放大與浮起 */
+            box-shadow: 0 8px 20px rgba(255, 183, 178, 0.6);
+        }
+
+        .btn-instagram:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        /* Email 按鈕：馬卡龍薄荷綠色 */
+        .btn-email {
+            background-color: #b5ead7;
+            color: #2d6a4f;
+            box-shadow: 0 6px 15px rgba(181, 234, 215, 0.5);
+        }
+
+        .btn-email:hover {
+            background-color: #9fe2cb;
+            transform: translateY(-2px) scale(1.02); /* 微放大與浮起 */
+            box-shadow: 0 8px 20px rgba(181, 234, 215, 0.7);
+        }
+
+        .btn-email:active {
+            transform: translateY(0) scale(0.98);
+        }
+    </style>
 </head>
 <body>
 
     <!-- 名片主體容器 -->
     <div class="card">
-        <!-- 1. 圓形大頭貼 (請將 src 裡的網址替換成你的照片路徑) -->
-        <img src="https://picsum.photos/150" alt="個人大頭貼" class="avatar">
+        <!-- 1. 圓形大頭貼 (可更換成你的照片) -->
+        <div class="avatar-container">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80" alt="個人大頭貼" class="avatar" onerror="this.src='https://placehold.co/150x150/ffb7c5/ffffff?text=Avatar'">
+        </div>
         
         <!-- 2. 名字與簡介 -->
-        <h1 class="name">小明 (Your Name)</h1>
-        <p class="bio">✨ 熱愛生活的 UI/UX 設計新手 | 用色彩點亮世界 🎨</p>
+        <h1 class="name">艾蜜莉 (Emily)</h1>
+        <span class="tag">UI/UX Designer</span>
+        <p class="bio">✨ 熱愛顏值的設計新手 | 用馬卡龍色彩與簡約視覺點亮每一天 🎨</p>
         
         <!-- 3. 按鈕區域 -->
         <div class="button-group">
-            <!-- 請將 href 裡的 # 替換成你的 Instagram 連結 -->
-            <a href="https://instagram.com" target="_blank" class="btn btn-instagram">Instagram</a>
-            <!-- 請將 href 裡的 email 替換成你的 Email -->
-            <a href="mailto:your-email@example.com" class="btn btn-email">Email 我</a>
+            <!-- Instagram 按鈕 -->
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="btn btn-instagram">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>
+                Instagram
+            </a>
+            
+            <!-- Email 按鈕 -->
+            <a href="mailto:your-email@example.com" class="btn btn-email">
+                <svg viewBox="0 0 24 24">
+                    <path d="M0 3v18h24v-18h-24zm6.623 7.929l-4.623 5.712v-9.458l4.623 3.746zm-4.141-5.929h19.035l-9.517 7.713-9.518-7.713zm5.694 6.788l3.824 3.099 3.83-3.104 5.612 6.816h-18.879l5.613-6.811zm9.201-0.859l4.623-3.746v9.458l-4.623-5.712z"/>
+                </svg>
+                Email 我
+            </a>
         </div>
     </div>
 
 </body>
 </html>
-html {
-  height: 100%;
-  background: 50% 50% no-repeat
-    url('data:image/svg+xml,<svg viewBox="-20 -5 60 40" width="140" xmlns="http://www.w3.org/2000/svg" opacity="0.2"><path d="M1 8l11-7 11 7v8l-11 7-11-7zm0 0l11 8 11-8m0 8L12 8 1 16M12 1v7m0 8v7" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"/><text x="-12" y="32" font-size="5" font-family="monospace" fill="currentColor">Built on CodePen</text></svg>');
-}
-/* ===== 基礎設定 ===== */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Noto Sans TC', sans-serif;
-    /* 馬卡龍漸層背景（淡粉紫到淡藍） */
-    background: linear-gradient(135deg, #ffd1dc 0%, #d4f0f0 100%);
-    min-height: 100vh;
-    /* 讓整張名片在螢幕正中央 */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-}
-
-/* ===== 名片卡片本體 ===== */
-.card {
-    background-color: #ffffff;
-    width: 100%;
-    max-width: 350px; /* 限制卡片最大寬度 */
-    padding: 40px 30px;
-    border-radius: 24px; /* 圓角效果 */
-    text-align: center; /* 內部內容全部置中 */
-    
-    /* 現代感柔和微陰影 */
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-    
-    /* 滑鼠懸停時的平滑過渡效果 */
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-/* 滑鼠移到名片上時微浮起 */
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
-}
-
-/* ===== 1. 圓形大頭貼 ===== */
-.avatar {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%; /* 變成正圓形 */
-    object-fit: cover; /* 確保照片不拉高變形 */
-    margin-bottom: 20px;
-    /* 給大頭貼一圈淡馬卡龍粉色邊框 */
-    border: 4px solid #ffb7c5;
-}
-
-/* ===== 2. 名字與簡介 ===== */
-.name {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #4a4a4a; /* 深灰比純黑更有質感 */
-    margin-bottom: 8px;
-}
-
-.bio {
-    font-size: 0.95rem;
-    color: #7a7a7a;
-    line-height: 1.5;
-    margin-bottom: 30px;
-}
-
-/* ===== 3. 按鈕區域 ===== */
-.button-group {
-    display: flex;
-    flex-direction: column; /* 按鈕上下排列 */
-    gap: 12px; /* 按鈕之間的間隙 */
-}
-
-/* 按鈕共通樣式 */
-.btn {
-    display: block;
-    padding: 12px 20px;
-    border-radius: 50px; /* 膠囊狀按鈕 */
-    text-decoration: none; /* 移除超連結底線 */
-    font-size: 0.95rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* 按鈕微陰影 */
-}
-
-/* Instagram 按鈕：馬卡龍粉橘色 */
-.btn-instagram {
-    background-color: #ffb7b2;
-    color: #ffffff;
-}
-
-.btn-instagram:hover {
-    background-color: #ff9e99;
-    transform: scale(1.02); /* 微放大 */
-}
-
-/* Email 按鈕：馬卡龍薄荷綠色 */
-.btn-email {
-    background-color: #b5ead7;
-    color: #2c5e4e;
-}
-
-.btn-email:hover {
-    background-color: #9fe2cb;
-    transform: scale(1.02); /* 微放大 */
-}
